@@ -1,0 +1,8 @@
+mcp
+azure-identity
+openai
+logging
+flask
+flask-cors
+anthropic
+python-dotenv

@@ -1,0 +1,31 @@
+{
+  "name": "azure-cli-chat-assistant",
+  "version": "1.0.0",
+  "description": "A modern web chat interface for Azure CLI operations",
+  "main": "dist/script.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "tsc --watch & python app.py",
+    "start": "python app.py",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "azure",
+    "cli",
+    "chat",
+    "typescript",
+    "web"
+  ],
+  "author": "Azure CLI Assistant",
+  "license": "MIT"
+} 

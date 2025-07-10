@@ -1,0 +1,66 @@
+name: Build and release the binaries
+on:
+  release:
+    types: [ published ]
+jobs:
+  build-jar:
+    name: 'Build JAR package'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+          check-latest: false
+          cache: 'maven'
+      - name: Build with Maven
+        run: './mvnw package'
+      - name: Temporarily save package
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-binary
+          path: |
+            ${{ github.workspace }}/target/*.jar
+            !${{ github.workspace }}/target/original-*.jar
+          retention-days: 1
+  publish-binaries:
+    name: 'Publish binaries to GitHub packages'
+    needs: [ build-jar ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download binary
+        uses: actions/download-artifact@v4
+        with:
+          name: java-binary
+      - name: Upload binary to the GitHub release page
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: azure-cli-mcp.jar
+          file_glob: true
+          tag: ${{ github.ref }}
+          overwrite: true
+  publish-docker-image:
+    name: Build and publish Docker image to GitHub Packages
+    runs-on: ubuntu-22.04
+    permissions:
+      packages: write
+    env:
+      DOCKER_IMAGE_NAME: 'docker.pkg.github.com/jdubois/azure-cli-mcp'
+    steps:
+      - name: Set Tag name environment variable
+        run: echo "TAG_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_NAME }} .
+      - name: Login to GitHub Packages
+        run: docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
+      - name: Push to GitHub Packages
+        run: docker push ${{ env.DOCKER_IMAGE_NAME }} --all-tags
